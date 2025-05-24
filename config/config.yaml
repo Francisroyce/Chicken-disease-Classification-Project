@@ -1,0 +1,9 @@
+artifacts_root: artifacts
+
+
+data_ingestion:
+  root_dir: artifacts/data_ingestion
+  source_URL: https://github.com/Francisroyce/Datasets/raw/refs/heads/main/Chicken-fecal-images.zip
+  local_data_file: artifacts/data_ingestion/data.zip
+  unzip_dir: artifacts/data_ingestion
+  expected_hash: "e52d10bff92918b815bd546dd1fb6570b70f88c1a9d69d74174eb0497b016bcf"
