@@ -32,7 +32,8 @@ def read_yaml(path_to_yaml: Path) -> ConfigBox:
     except BoxValueError:
         raise ValueError("YAML file is empty")
     except Exception as e:
-        raise e
+        logger.exception(f"Error reading YAML file at {path_to_yaml}")
+        raise 
 
 
 @ensure_annotations

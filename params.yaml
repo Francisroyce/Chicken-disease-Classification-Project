@@ -1,1 +1,15 @@
-key: value
+AUGMENTATION: True   # ✅ Keep this if you're applying data augmentation
+
+MODEL_PARAMS:
+  IMAGE_SIZE: [224, 224, 3]
+  BATCH_SIZE: 16
+  DROPOUT: 0.5
+  FINETUNE: True
+  FREEZE_BACKBONES: ['resnet50']
+  INCLUDE_TOP: False        # ✅ Correct for transfer learning (custom classifier head)
+  CLASSES: 2
+  WEIGHTS: imagenet
+  LEARNING_RATE: 0.001
+
+TRAINING:
+  EPOCHS: 10

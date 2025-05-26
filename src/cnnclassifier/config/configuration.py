@@ -1,8 +1,9 @@
 from cnnclassifier.constants import *
 from cnnclassifier.utils.common import  read_yaml, create_directories # Assumed utility file
-from cnnclassifier.entity.config_entity import DataIngestionConfig
+from cnnclassifier.entity.config_entity import (DataIngestionConfig, 
+                                                PrepareBaseModelConfig)
 
-
+# config manager for data ingestion
 class ConfigurationManager:
     def __init__(
         self,
@@ -27,3 +28,23 @@ class ConfigurationManager:
         )
 
         return data_ingestion_config
+    
+
+#configuration manager for model
+    def get_prepare_base_model_config(self) -> PrepareBaseModelConfig:
+        config = self.config['prepare_base_model']
+
+        create_directories([config['root_dir']])  # ✅ Treat as dictionary
+
+        prepare_base_model_config = PrepareBaseModelConfig(
+            root_dir=Path(config['root_dir']),
+            base_model_dir=Path(config['base_model_dir']),
+            updated_base_model_dir=Path(config['updated_base_model_dir']),
+            params_image_size=self.params['MODEL_PARAMS']['IMAGE_SIZE'],
+            params_learning_rate=self.params['MODEL_PARAMS']['LEARNING_RATE'],
+            params_include_top=self.params['MODEL_PARAMS']['INCLUDE_TOP'],
+            params_weights=self.params['MODEL_PARAMS']['WEIGHTS'],
+            params_classes=self.params['MODEL_PARAMS']['CLASSES']
+        )
+
+        return prepare_base_model_config
