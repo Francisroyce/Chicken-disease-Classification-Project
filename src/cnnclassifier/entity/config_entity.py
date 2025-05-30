@@ -22,3 +22,11 @@ class PrepareBaseModelConfig:
     params_include_top: bool                # From YAML → MODEL_PARAMS.INCLUDE_TOP
     params_weights: str                     # From YAML → MODEL_PARAMS.WEIGHTS
     params_classes: int 
+
+#entity for callbacks
+
+@dataclass(frozen=True)
+class PrepareCallbacksConfig:
+    root_dir: Path
+    tensorboard_root_log_dir: Path
+    checkpoint_model_filepath: Path
