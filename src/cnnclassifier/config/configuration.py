@@ -1,10 +1,13 @@
 from cnnclassifier.constants import *
 import os
-from cnnclassifier.utils.common import  read_yaml, create_directories # Assumed utility file
-from cnnclassifier.entity.config_entity import (DataIngestionConfig, 
-                                                PrepareBaseModelConfig, PrepareCallbacksConfig)
+from cnnclassifier.utils.common import read_yaml, create_directories
+from cnnclassifier.entity.config_entity import (
+    DataIngestionConfig,
+    PrepareBaseModelConfig,
+    PrepareCallbacksConfig
+)
+from pathlib import Path
 
-# config manager for data ingestion
 class ConfigurationManager:
     def __init__(
         self,
@@ -13,7 +16,7 @@ class ConfigurationManager:
     ):
         self.config = read_yaml(config_filepath)
         self.params = read_yaml(params_filepath)
-        create_directories([self.config['artifacts_root']])  # fix here
+        create_directories([self.config['artifacts_root']])
 
     def get_data_ingestion_config(self) -> DataIngestionConfig:
         config = self.config['data_ingestion']
@@ -29,13 +32,11 @@ class ConfigurationManager:
         )
 
         return data_ingestion_config
-    
 
-#configuration manager for model
     def get_prepare_base_model_config(self) -> PrepareBaseModelConfig:
         config = self.config['prepare_base_model']
 
-        create_directories([config['root_dir']])  # ✅ Treat as dictionary
+        create_directories([config['root_dir']])
 
         prepare_base_model_config = PrepareBaseModelConfig(
             root_dir=Path(config['root_dir']),
@@ -49,21 +50,9 @@ class ConfigurationManager:
         )
 
         return prepare_base_model_config
-    
-
-#configuration for callbacks
-class ConfigurationManager:
-    def __init__(
-        self,
-        config_filepath=CONFIG_FILE_PATH,
-        params_filepath=PARAM_FILE_PATH
-    ):
-        self.config = read_yaml(config_filepath)
-        self.params = read_yaml(params_filepath)
-        create_directories([self.config['artifacts_root']])
 
     def get_prepare_callback_config(self) -> PrepareCallbacksConfig:
-        config = self.config['prepare_callbacks']  # dictionary-style access
+        config = self.config['prepare_callbacks']
 
         model_ckpt_dir = os.path.dirname(config['checkpoint_model_filepath'])
 
