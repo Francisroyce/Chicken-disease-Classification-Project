@@ -4,7 +4,8 @@ from cnnclassifier.utils.common import read_yaml, create_directories
 from cnnclassifier.entity.config_entity import (
     DataIngestionConfig,
     PrepareBaseModelConfig,
-    PrepareCallbacksConfig
+    PrepareCallbacksConfig,
+    TrainingConfig
 )
 from pathlib import Path
 
@@ -68,3 +69,32 @@ class ConfigurationManager:
         )
 
         return prepare_callbacks_config
+    
+
+    def get_training_config(self) -> TrainingConfig:
+        training = self.config['training']
+        prepare_base_model = self.config['prepare_base_model']
+        params = self.params
+
+        training_data = os.path.join("artifacts/data_ingestion", "Chicken-fecal-images")
+
+        create_directories([Path(training['root_dir'])])
+
+        training_config = TrainingConfig(
+            root_dir=Path(training['root_dir']),
+            trained_model_path=Path(training['trained_model_path']),
+            updated_base_model_dir=Path(prepare_base_model['updated_base_model_dir']),
+            training_data=Path(training_data),
+            params_epochs=params['TRAINING']['EPOCHS'],
+            params_batch_size=params['MODEL_PARAMS']['BATCH_SIZE'],
+            params_is_augmentation=params['AUGMENTATION'],
+            params_image_size=params['MODEL_PARAMS']['IMAGE_SIZE'],
+            params_learning_rate=params['MODEL_PARAMS']['LEARNING_RATE']
+        )
+
+        return training_config
+    
+
+
+ 
+
