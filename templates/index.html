@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PoultryGuard AI – Professional Chicken Disease Detection</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --primary: #014f86;
+      --secondary: #00b4d8;
+      --accent: #ff9e00;
+      --dark: #013a63;
+      --light: #f4f6f8;
+      --success: #4caf50;
+      --warning: #ff9800;
+      --danger: #f44336;
+      --text: #333;
+      --text-light: #fff;
+      --card-bg: #fff;
+      --sidebar-width: 280px;
+      --transition: all 0.3s ease;
+    }
+
+    html, body {
+      height: 100%;
+      overflow-x: hidden; /* Prevent horizontal scroll */
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      background-color: var(--light);
+      color: var(--text);
+    }
+
+    /* Header styles */
+    header {
+      background: linear-gradient(135deg, var(--primary), var(--dark));
+      color: var(--text-light);
+      padding: 20px 20px 20px 60px; /* Added left padding for hamburger space */
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      z-index: 1; /* Ensure header is above main content but below sidebar */
+      transition: padding-left var(--transition); /* Smooth transition for padding */
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2.2rem;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+
+    header p {
+      margin-top: 8px;
+      font-style: italic;
+      opacity: 0.9;
+    }
+
+    /* Hamburger menu */
+    .hamburger {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 1.8rem;
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      cursor: pointer;
+      color: white;
+      z-index: 1002; /* Higher than sidebar, but lower than close button potentially if in overlay */
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px); /* For Safari */
+    }
+
+    .hamburger:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Sidebar container and styles */
+    .sidebar-container {
+      position: fixed; /* Ensures it stays in place */
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%; /* Take full width to accommodate overlay */
+      z-index: 1000; /* Ensures it's above main content */
+      pointer-events: none; /* Allows clicks through when not showing */
+      display: flex; /* To position sidebar and overlay */
+    }
+
+    .sidebar {
+      width: var(--sidebar-width);
+      max-width: 80%; /* Prevent sidebar from being too wide on small screens */
+      height: 100%;
+      background: linear-gradient(160deg, var(--dark), var(--primary));
+      color: var(--text-light);
+      padding: 20px;
+      transition: transform var(--transition);
+      transform: translateX(-100%); /* Start hidden */
+      z-index: 1001; /* Above overlay */
+      box-shadow: 4px 0 15px rgba(0, 0, 0, 0.2);
+      overflow-y: auto; /* Enable scrolling for long content */
+      position: relative; /* For the close button to be relative to it */
+      pointer-events: auto; /* Enable clicks inside the sidebar */
+    }
+
+    .sidebar.show {
+      transform: translateX(0); /* Show sidebar */
+    }
+
+    .sidebar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .sidebar-header h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      font-size: 1.8rem;
+      cursor: pointer;
+      padding: 5px;
+      transition: var(--transition);
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .sidebar-content {
+      padding: 10px 0;
+    }
+
+    .sidebar-section {
+      margin-bottom: 25px;
+    }
+
+    .sidebar-section h4 {
+      font-size: 1.1rem;
+      margin-bottom: 15px;
+      position: relative;
+      padding-bottom: 8px;
+    }
+
+    .sidebar-section h4::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 50px;
+      height: 2px;
+      background: var(--secondary);
+    }
+
+    .sidebar a {
+      color: var(--text-light);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      margin: 12px 0;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: var(--transition);
+    }
+
+    .sidebar a i {
+      margin-right: 12px;
+      width: 24px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+
+    .sidebar a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateX(5px);
+    }
+
+    .contact-info {
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    .contact-info p {
+      margin: 8px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .contact-info i {
+      margin-right: 10px;
+      width: 20px;
+      text-align: center;
+    }
+
+    /* Overlay for sidebar */
+    .sidebar-overlay {
+      flex-grow: 1; /* Takes up remaining space */
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity var(--transition), visibility var(--transition);
+      pointer-events: auto; /* Enable clicks on the overlay */
+    }
+
+    .sidebar-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Main content container */
+    .content-section {
+      display: none; /* Hidden by default, JavaScript will show/hide */
+      padding: 40px 20px;
+      min-height: calc(100vh - 180px);
+      position: relative;
+      z-index: 0;
+      justify-content: center; /* Center card content */
+      align-items: flex-start; /* Align card content to top */
+    }
+
+    /* Show only the active content section */
+    .content-section.active {
+      display: flex; /* Use flex to center the card */
+    }
+
+    /* Main content */
+    main {
+      /* This main tag will now act as the container for all content sections */
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      padding: 35px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+      width: 100%;
+      max-width: 600px;
+      text-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .card h2 {
+      margin-bottom: 25px;
+      color: var(--primary);
+      font-size: 1.8rem;
+      position: relative;
+      padding-bottom: 15px;
+    }
+
+    .card h2::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 80px;
+      height: 3px;
+      background: var(--secondary);
+      border-radius: 3px;
+    }
+
+    .instructions {
+      margin-bottom: 25px;
+      color: #666;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .drop-zone {
+      border: 2px dashed #d1d5db;
+      padding: 35px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      background-color: #f9f9f9;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .drop-zone::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, rgba(1, 79, 134, 0.03), rgba(0, 180, 216, 0.03));
+      z-index: 0;
+    }
+
+    .drop-zone.dragover {
+      background-color: #e0f7fa;
+      border-color: var(--secondary);
+    }
+
+    .drop-zone i {
+      font-size: 3rem;
+      color: var(--secondary);
+      margin-bottom: 15px;
+    }
+
+    .drop-zone p {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #555;
+      position: relative;
+      z-index: 1;
+    }
+
+    .drop-zone .browse-text {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .preview-container {
+      margin: 30px 0;
+      position: relative;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      min-height: 200px;
+      background: #f0f4f8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #imagePreview {
+      max-width: 100%;
+      height: auto;
+      display: none;
+      max-height: 400px;
+      object-fit: contain;
+    }
+
+    .preview-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #9ca3af;
+      padding: 30px;
+    }
+
+    .preview-placeholder i {
+      font-size: 4rem;
+      margin-bottom: 15px;
+      opacity: 0.3;
+    }
+
+    button {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 12px rgba(0, 180, 216, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+
+    button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0, 180, 216, 0.4);
+    }
+
+    button:hover::before {
+      left: 100%;
+    }
+
+    button:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    button:disabled:hover::before {
+      left: -100%;
+    }
+
+    /* Modal styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 40px;
+      border-radius: 20px;
+      box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      animation: slideUp 0.4s ease;
+      overflow: hidden;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-content::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 6px;
+      background: var(--secondary);
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: #f0f4f8;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      color: var(--primary);
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .back-button:hover {
+      background: var(--primary);
+      color: white;
+      transform: translateX(-3px);
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--secondary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+      display: none;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .result-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+    }
+
+    .healthy { color: var(--success); }
+    .coccidiosis { color: var(--warning); }
+    .newcastle { color: var(--danger); }
+    .fowlpox { color: var(--warning); }
+    .unknown { color: #9e9e9e; }
+
+    footer {
+      background-color: #e6e6e6;
+      text-align: center;
+      padding: 25px;
+      font-size: 0.95rem;
+      color: #555;
+      border-top: 1px solid #d1d1d1;
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 260px;
+      }
+      
+      .card {
+        padding: 25px;
+      }
+      
+      .drop-zone {
+        padding: 25px 15px;
+      }
+      
+      .modal-content {
+        padding: 30px 20px;
+      }
+      .hamburger {
+        top: 15px;
+        left: 15px;
+      }
+      header {
+        padding-left: 60px; /* Maintain padding on smaller screens too */
+      }
+      header h1 {
+        font-size: 2rem; /* Slightly smaller font on medium screens */
+      }
+    }
+
+    @media (max-width: 480px) {
+      header {
+        padding-left: 50px; /* Further adjust padding on very small screens */
+      }
+      header h1 {
+        font-size: 1.6rem; /* Even smaller font on small screens */
+      }
+      .hamburger {
+        top: 10px;
+        left: 10px;
+        width: 42px;
+        height: 42px;
+      }
+    }
+
+    /* Adjust header padding when sidebar is open */
+    .sidebar.show ~ header {
+      padding-left: calc(var(--sidebar-width) + 20px); /* Sidebar width + hamburger left position */
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-container">
+    <div class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h3>Navigation</h3>
+        <button class="close-btn" onclick="toggleSidebar()">&times;</button>
+      </div>
+      <div class="sidebar-content">
+        <div class="sidebar-section">
+          <h4>Main Menu</h4>
+          <a href="#home"><i class="fas fa-home"></i> Home</a>
+          <a href="#history"><i class="fas fa-history"></i> History</a>
+          <a href="#analytics"><i class="fas fa-chart-line"></i> Analytics</a>
+          <a href="#settings"><i class="fas fa-cog"></i> Settings</a>
+        </div>
+        
+        <div class="sidebar-section">
+          <h4>Disease Info</h4>
+          <a href="#healthy-info"><i class="fas fa-feather"></i> Healthy Chickens</a>
+          <a href="#coccidiosis-info"><i class="fas fa-bug"></i> Coccidiosis</a>
+          <a href="#newcastle-info"><i class="fas fa-virus"></i> Newcastle</a>
+          <a href="#fowlpox-info"><i class="fas fa-disease"></i> Fowlpox</a>
+        </div>
+        
+        <div class="contact-info">
+          <h4>Contact</h4>
+          <p><i class="fas fa-envelope"></i> francisroyce12@gmail.com</p>
+          <a href="https://github.com/Francisroyce" target="_blank">
+            <i class="fab fa-github"></i> GitHub
+          </a>
+          <a href="https://www.linkedin.com/in/okoronkwo-francis-832986233/" target="_blank">
+            <i class="fab fa-linkedin"></i> LinkedIn
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+  </div>
+
+  <button class="hamburger" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <header>
+    <h1>PoultryGuard AI</h1>
+    <p>Smart Detection of Chicken Diseases</p>
+  </header>
+
+  <main>
+    <div id="home-content" class="content-section active">
+      <div class="card">
+        <h2>Upload Chicken Image</h2>
+        <p class="instructions">Upload a clear image of a chicken for AI-powered disease detection. Our system supports JPG, PNG, and WebP formats.</p>
+        
+        <form id="uploadForm">
+          <div class="drop-zone" id="dropZone">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop your image here<br>or <span class="browse-text">browse files</span></p>
+            <input type="file" accept="image/*" id="imageInput" hidden />
+          </div>
+          
+          <div class="preview-container">
+            <img id="imagePreview" alt="Preview Image" />
+            <div class="preview-placeholder" id="previewPlaceholder">
+              <i class="fas fa-camera"></i>
+              <p>Image preview will appear here</p>
+            </div>
+          </div>
+          
+          <div class="spinner" id="spinner"></div>
+          <button type="submit" id="predictBtn">Analyze Image</button>
+        </form>
+      </div>
+    </div>
+
+    <div id="history-content" class="content-section">
+      <div class="card">
+        <h2>Detection History</h2>
+        <p>This section will display a log of your previous chicken disease detections.</p>
+        <p>*(Feature coming soon!)*</p>
+      </div>
+    </div>
+
+    <div id="analytics-content" class="content-section">
+      <div class="card">
+        <h2>Poultry Health Analytics</h2>
+        <p>View trends and statistics related to chicken diseases detected over time.</p>
+        <p>*(Feature coming soon!)*</p>
+      </div>
+    </div>
+
+    <div id="settings-content" class="content-section">
+      <div class="card">
+        <h2>Application Settings</h2>
+        <p>Configure your preferences and account settings here.</p>
+        <p>*(Feature coming soon!)*</p>
+      </div>
+    </div>
+
+    <div id="healthy-info" class="content-section">
+      <div class="card">
+        <h2>Healthy Chickens: Characteristics & Care</h2>
+        <p>Learn about the signs of a healthy chicken and best practices for their care.</p>
+        <ul>
+          <li>Bright eyes, red combs and wattles.</li>
+          <li>Active and alert behavior.</li>
+          <li>Good appetite and consistent egg production.</li>
+          <li>Clean feathers and strong legs.</li>
+        </ul>
+        <p>Maintaining good hygiene, balanced nutrition, and clean water are crucial.</p>
+      </div>
+    </div>
+
+    <div id="coccidiosis-info" class="content-section">
+      <div class="card">
+        <h2>Coccidiosis: Information & Prevention</h2>
+        <p>Coccidiosis is a parasitic disease affecting the intestines of chickens.</p>
+        <h3>Symptoms:</h3>
+        <ul>
+          <li>Bloody or watery droppings.</li>
+          <li>Ruffled feathers, pale combs.</li>
+          <li>Loss of appetite, weight loss.</li>
+          <li>Lethargy and depression.</li>
+        </ul>
+        <h3>Prevention & Treatment:</h3>
+        <p>Maintain dry litter, use medicated feed for chicks, and consult a vet for specific anticoccidial treatments.</p>
+      </div>
+    </div>
+
+    <div id="newcastle-info" class="content-section">
+      <div class="card">
+        <h2>Newcastle Disease: Symptoms & Control</h2>
+        <p>Newcastle Disease is a highly contagious viral disease affecting poultry.</p>
+        <h3>Symptoms:</h3>
+        <ul>
+          <li>Respiratory signs (gasping, coughing).</li>
+          <li>Nervous signs (tremors, paralysis, twisted neck).</li>
+          <li>Diarrhea, decreased egg production.</li>
+          <li>Sudden death.</li>
+        </ul>
+        <h3>Control:</h3>
+        <p>Strict biosecurity, vaccination, and immediate isolation/culling of infected birds are vital. Report suspected cases to authorities.</p>
+      </div>
+    </div>
+
+    <div id="fowlpox-info" class="content-section">
+      <div class="card">
+        <h2>Fowlpox: Identifying & Managing</h2>
+        <p>Fowlpox is a viral disease causing skin lesions and/or diphtheritic lesions in the mouth/respiratory tract.</p>
+        <h3>Symptoms:</h3>
+        <ul>
+          <li>Skin lesions (scabs, warts) on comb, wattles, eyelids.</li>
+          <li>Lesions inside the mouth, throat, or trachea.</li>
+          <li>Reduced egg production, poor growth.</li>
+        </ul>
+        <h3>Management:</h3>
+        <p>Vaccination is effective. Isolate affected birds and provide supportive care. Lesions can be treated with antiseptics.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <div class="modal" id="resultModal">
+    <div class="modal-content">
+      <button class="back-button" id="backBtn">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      
+      <div class="result-icon" id="resultIcon"></div>
+      <h3 id="resultTitle"></h3>
+      <p id="resultText"></p>
+      <div id="resultActions"></div>
+    </div>
+  </div>
+
+  <footer>
+    &copy; <script>document.write(new Date().getFullYear());</script> PoultryGuard AI. All rights reserved.
+  </footer>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    function toggleSidebar() {
+      sidebar.classList.toggle('show');
+      sidebarOverlay.classList.toggle('show');
+      
+      // Toggle body scroll
+      // This is important to prevent scrolling the main content when sidebar is open
+      document.body.style.overflow = sidebar.classList.contains('show') ? 'hidden' : 'auto';
+    }
+
+    const imageInput = document.getElementById("imageInput");
+    const imagePreview = document.getElementById("imagePreview");
+    const previewPlaceholder = document.getElementById("previewPlaceholder");
+    const resultModal = document.getElementById("resultModal");
+    const resultTitle = document.getElementById("resultTitle");
+    const resultText = document.getElementById("resultText");
+    const resultIcon = document.getElementById("resultIcon");
+    const backBtn = document.getElementById("backBtn");
+    const spinner = document.getElementById("spinner");
+    const dropZone = document.getElementById("dropZone");
+    const predictBtn = document.getElementById("predictBtn");
+
+    const diseaseInfo = {
+      healthy: {
+        text: "✅ Your chicken appears to be healthy. No visible signs of disease were detected.",
+        voice: "Your chicken appears to be healthy. Great job! Maintain proper hygiene and nutrition for optimal health.",
+        icon: "fas fa-check-circle healthy",
+        actions: '<button class="action-btn" onclick="speakCurrentResult()"><i class="fas fa-volume-up"></i> Read Result</button>'
+      },
+      coccidiosis: {
+        text: "⚠️ Coccidiosis detected. Isolate the affected chicken and consult a vet immediately. Provide clean water and consider anticoccidial treatment.",
+        voice: "Coccidiosis detected. Please isolate the affected chicken and consult a veterinarian immediately. Provide clean water and consider anticoccidial treatment.",
+        icon: "fas fa-exclamation-triangle coccidiosis",
+        actions: '<button class="action-btn" onclick="speakCurrentResult()"><i class="fas fa-volume-up"></i> Read Result</button> <a href="#coccidiosis-info" class="action-btn"><i class="fas fa-book"></i> Learn More</a>'
+      },
+      newcastle: {
+        text: "⚠️ Newcastle Disease detected. This is highly contagious! Quarantine immediately, contact a vet, and follow biosecurity protocols.",
+        voice: "Newcastle disease detected. This is highly contagious! Quarantine immediately, contact a veterinarian, and follow strict biosecurity protocols.",
+        icon: "fas fa-exclamation-circle newcastle",
+        actions: '<button class="action-btn" onclick="speakCurrentResult()"><i class="fas fa-volume-up"></i> Read Result</button> <a href="#newcastle-info" class="action-btn"><i class="fas fa-book"></i> Learn More</a>'
+      },
+      fowlpox: {
+        text: "⚠️ Fowlpox detected. Isolate affected birds, apply antiseptic to lesions, and vaccinate the flock. Consult a vet for treatment options.",
+        voice: "Fowlpox detected. Isolate affected birds, apply antiseptic to lesions, and vaccinate the flock. Consult a veterinarian for treatment options.",
+        icon: "fas fa-bug fowlpox",
+        actions: '<button class="action-btn" onclick="speakCurrentResult()"><i class="fas fa-volume-up"></i> Read Result</button> <a href="#fowlpox-info" class="action-btn"><i class="fas fa-book"></i> Learn More</a>'
+      },
+      unknown: {
+        text: "⚠️ Unable to classify the image. Please try again with a clearer photo showing the chicken clearly.",
+        voice: "Image could not be classified. Try again with a better picture showing the chicken clearly.",
+        icon: "fas fa-question-circle unknown",
+        actions: '<button class="action-btn" onclick="speakCurrentResult()"><i class="fas fa-volume-up"></i> Read Result</button>'
+      }
+    };
+
+    let currentResult = null;
+
+    function speakText(text) {
+      // Cancel any ongoing speech
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+      }
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function speakCurrentResult() {
+      if (currentResult) {
+        speakText(diseaseInfo[currentResult].voice);
+      }
+    }
+
+    dropZone.addEventListener("click", () => imageInput.click());
+
+    dropZone.addEventListener("dragover", e => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+
+    dropZone.addEventListener("drop", e => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) {
+        imageInput.files = e.dataTransfer.files;
+        previewImage(file);
+      } else {
+        alert("Please drop a valid image file (JPG, PNG, WebP)");
+      }
+    });
+
+    imageInput.addEventListener("change", function () {
+      if (this.files[0]) {
+        previewImage(this.files[0]);
+      }
+    });
+
+    function previewImage(file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = "block";
+        previewPlaceholder.style.display = "none";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById("uploadForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const file = imageInput.files[0];
+      if (!file) {
+        alert("Please upload an image.");
+        return;
+      }
+
+      // Disable button and show spinner
+      predictBtn.disabled = true;
+      predictBtn.textContent = "Analyzing...";
+      spinner.style.display = "block";
+
+      // Convert image to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = async function() {
+        const base64Image = reader.result.split(',')[1]; // Get base64 string without data:image/jpeg;base64,
+
+        try {
+          const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ image: base64Image }),
+          });
+
+          const data = await response.json();
+
+          if (data.success) {
+            let predictionKey;
+            if (data.result && data.result.length > 0) {
+              const predictedDisease = data.result[0].image; 
+              // Map backend's prediction to frontend's diseaseInfo keys
+              if (predictedDisease.toLowerCase() === 'healthy') {
+                predictionKey = 'healthy';
+              } else if (predictedDisease.toLowerCase() === 'coccidiosis') {
+                predictionKey = 'coccidiosis';
+              } else if (predictedDisease.toLowerCase() === 'newcastle') { // Added Newcastle mapping
+                predictionKey = 'newcastle';
+              } else if (predictedDisease.toLowerCase() === 'fowlpox') { // Added Fowlpox mapping
+                predictionKey = 'fowlpox';
+              }
+              else {
+                predictionKey = 'unknown'; 
+              }
+            } else {
+              predictionKey = 'unknown'; 
+            }
+            displayResult(predictionKey);
+          } else {
+            console.error("Prediction failed:", data.error);
+            displayResult('unknown'); 
+          }
+        } catch (error) {
+          console.error("Error communicating with backend:", error);
+          displayResult('unknown'); 
+        } finally {
+          // Re-enable button
+          predictBtn.disabled = false;
+          predictBtn.textContent = "Analyze Image";
+          spinner.style.display = "none";
+        }
+      };
+    });
+
+    function displayResult(prediction) {
+      currentResult = prediction;
+      const info = diseaseInfo[prediction] || diseaseInfo.unknown;
+      
+      // Set icon
+      resultIcon.className = `result-icon ${info.icon}`;
+      
+      // Set text
+      resultTitle.textContent = `Prediction: ${prediction.charAt(0).toUpperCase() + prediction.slice(1)}`;
+      resultText.textContent = info.text;
+      
+      // Set actions
+      document.getElementById("resultActions").innerHTML = info.actions || '';
+      
+      // Show modal
+      resultModal.style.display = "flex";
+      
+      // Speak result
+      speakText(info.voice);
+    }
+
+    backBtn.addEventListener("click", () => {
+      resultModal.style.display = "none";
+      imagePreview.src = "";
+      imagePreview.style.display = "none";
+      imageInput.value = "";
+      previewPlaceholder.style.display = "flex";
+      
+      // Cancel any ongoing speech
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+      }
+    });
+
+    // Close modal when clicking outside
+    resultModal.addEventListener("click", (e) => {
+      if (e.target === resultModal) {
+        resultModal.style.display = "none";
+      }
+    });
+
+    // --- SPA Navigation Logic ---
+    const contentSections = document.querySelectorAll('.content-section');
+    const sidebarLinks = document.querySelectorAll('.sidebar a');
+
+    function showContent(hash) {
+      // Remove 'active' from all sections
+      contentSections.forEach(section => {
+        section.classList.remove('active');
+      });
+
+      let targetId = hash.substring(1); // Remove the '#'
+      if (!targetId) { // Default to 'home' if hash is empty
+        targetId = 'home';
+      }
+      
+      const targetSection = document.getElementById(targetId + '-content'); // e.g., 'home-content'
+      if (targetSection) {
+        targetSection.classList.add('active');
+        // If navigating to home, ensure the prediction card is set up correctly
+        if (targetId === 'home') {
+          // Reset image preview if it was showing a result
+          imagePreview.src = "";
+          imagePreview.style.display = "none";
+          imageInput.value = ""; // Clear file input
+          previewPlaceholder.style.display = "flex";
+          spinner.style.display = "none";
+          predictBtn.disabled = false;
+          predictBtn.textContent = "Analyze Image";
+        }
+      } else {
+        // Fallback for non-existent content or specific error page
+        console.warn(`Content section for hash "${hash}" not found. Displaying home.`);
+        document.getElementById('home-content').classList.add('active');
+      }
+
+      // Close sidebar after navigation
+      if (sidebar.classList.contains('show')) {
+        toggleSidebar();
+      }
+    }
+
+    // Initial load: check for hash or default to home
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.location.hash) {
+        showContent(window.location.hash);
+      } else {
+        showContent('#home'); // Default view
+      }
+
+      // Add click listeners to sidebar links for SPA navigation
+      sidebarLinks.forEach(link => {
+        link.addEventListener('click', function(event) {
+          const hash = this.getAttribute('href');
+          if (hash.startsWith('#')) {
+            event.preventDefault(); // Prevent default link behavior for hash links
+            window.location.hash = hash; // Update URL hash, which triggers hashchange
+          }
+          // If it's an external link (like GitHub/LinkedIn), let it behave normally
+        });
+      });
+    });
+
+    // Listen for hash changes in the URL (e.g., browser back/forward buttons)
+    window.addEventListener('hashchange', () => {
+      showContent(window.location.hash);
+    });
+
+    // Service worker registration (ensure service-worker.js exists and is correctly configured)
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(() => console.log('Service Worker Registered'))
+        .catch(error => console.error('Service Worker registration failed:', error));
+    }
+  </script>
+</body>
+</html>
