@@ -1,0 +1,51 @@
+stages:
+  data_ingestion:
+    cmd: python src/cnnclassifier/pipeline/stage_01_data_ingestion.py
+    deps:
+      - src/cnnclassifier/pipeline/stage_01_data_ingestion.py
+      - config/config.yaml
+    outs:
+      - artifacts/data_ingestion/Chicken-fecal-images
+
+  prepare_base_model:
+    cmd: python src/cnnclassifier/pipeline/stage_02_prepare_base_model.py
+    deps:
+      - src/cnnclassifier/pipeline/stage_02_prepare_base_model.py
+      - config/config.yaml
+    params:
+      - MODEL_PARAMS.IMAGE_SIZE
+      - MODEL_PARAMS.INCLUDE_TOP
+      - MODEL_PARAMS.CLASSES
+      - MODEL_PARAMS.WEIGHTS
+      - MODEL_PARAMS.LEARNING_RATE
+    outs:
+      - artifacts/prepare_base_model
+
+  training:
+    cmd: python src/cnnclassifier/pipeline/stage_03_training.py
+    deps:
+      - src/cnnclassifier/pipeline/stage_03_training.py
+      - src/cnnclassifier/components/prepare_callbacks.py
+      - config/config.yaml
+      - artifacts/data_ingestion/Chicken-fecal-images
+      - artifacts/prepare_base_model
+    params:
+      - MODEL_PARAMS.IMAGE_SIZE
+      - TRAINING.EPOCHS
+      - MODEL_PARAMS.BATCH_SIZE
+      - AUGMENTATION
+    outs:
+      - artifacts/training/model.keras
+
+  evaluation:
+    cmd: python src/cnnclassifier/pipeline/stage_04_model_evaluation.py
+    deps:
+      - src/cnnclassifier/pipeline/stage_04_model_evaluation.py
+      - config/config.yaml
+      - artifacts/data_ingestion/Chicken-fecal-images
+      - artifacts/training/model.keras
+    params:
+      - MODEL_PARAMS.IMAGE_SIZE
+      - MODEL_PARAMS.BATCH_SIZE
+    metrics:
+      - artifacts/evaluation/scores.json

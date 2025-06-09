@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List
 
+
 #entity for daat ingestion
 @dataclass(frozen=True)
 class DataIngestionConfig:
@@ -10,6 +11,7 @@ class DataIngestionConfig:
     local_data_file: Path
     unzip_dir: Path
     expected_hash: str = None
+
 
 #entity for Basemodel
 @dataclass(frozen=True)
@@ -23,6 +25,7 @@ class PrepareBaseModelConfig:
     params_weights: str                     # From YAML → MODEL_PARAMS.WEIGHTS
     params_classes: int 
 
+
 #entity for callbacks
 
 @dataclass(frozen=True)
@@ -30,6 +33,7 @@ class PrepareCallbacksConfig:
     root_dir: Path
     tensorboard_root_log_dir: Path
     checkpoint_model_filepath: Path
+
 
 #entity for training
 @dataclass(frozen=True)
@@ -43,3 +47,12 @@ class TrainingConfig:
     params_is_augmentation: bool
     params_image_size: List[int]
     params_learning_rate: float
+
+#entity for evaluation
+@dataclass(frozen=True)
+class EvaluationConfig:
+    trained_model_path: Path
+    training_data: Path
+    all_params: dict
+    params_image_size: List[int]
+    params_batch_size: int

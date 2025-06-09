@@ -1,11 +1,13 @@
 from cnnclassifier.constants import *
 import os
+from pathlib import Path
 from cnnclassifier.utils.common import read_yaml, create_directories
 from cnnclassifier.entity.config_entity import (
     DataIngestionConfig,
     PrepareBaseModelConfig,
     PrepareCallbacksConfig,
-    TrainingConfig
+    TrainingConfig,
+    EvaluationConfig
 )
 from pathlib import Path
 
@@ -93,6 +95,27 @@ class ConfigurationManager:
         )
 
         return training_config
+    
+
+
+    def get_validation_config(self) -> EvaluationConfig:
+        model_params = self.params.get("MODEL_PARAMS", {})
+    
+        image_size = model_params.get("IMAGE_SIZE")
+        batch_size = model_params.get("BATCH_SIZE")
+    
+        if image_size is None or batch_size is None:
+            raise KeyError("IMAGE_SIZE or BATCH_SIZE not found in MODEL_PARAMS section of params.yaml")
+    
+        eval_config = EvaluationConfig(
+            trained_model_path=os.path.join("artifacts", "training", "model.keras"),
+            training_data=os.path.join("artifacts", "data_ingestion", "Chicken-fecal-images"),
+            all_params=self.params,
+            params_image_size=image_size,
+            params_batch_size=batch_size
+        )
+        return eval_config
+
     
 
 

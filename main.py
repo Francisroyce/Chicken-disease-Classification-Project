@@ -46,3 +46,20 @@ try:
 except Exception as e:
     logger.exception(f"Stage {STAGE_NAME} failed due to: {e}")
     raise
+
+
+# evaluation
+STAGE_NAME = "Model Evaluation"
+
+try:
+    logger.info("***********")
+    logger.info(f">>>>> Stage: {STAGE_NAME} started <<<<<")
+
+    from cnnclassifier.pipeline.stage_04_model_evaluation import ModelEvaluationPipeline
+    model_evaluator = ModelEvaluationPipeline()
+    model_evaluator.main()
+
+    logger.info(f">>>>> Stage: {STAGE_NAME} completed <<<<<\n\nx==========x")
+except Exception as e:
+    logger.exception(f"Stage {STAGE_NAME} failed due to: {e}")
+    raise
