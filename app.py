@@ -1,3 +1,5 @@
+import sys, os
+sys.path.append(os.path.join(os.getcwd(), "src"))
 import traceback
 import os
 from pathlib import Path
@@ -10,6 +12,7 @@ from threading import Thread
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+
 
 # Set locale environment variables
 os.putenv('LANG', 'en_US.UTF-8')
@@ -90,4 +93,5 @@ def predictionRoute():
 # --------- Start Server ---------
 if __name__ == "__main__":
     print(f"Starting {app.config['APP_NAME']} server on port 8080...")
-    app.run(host='0.0.0.0', port=8080)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+
