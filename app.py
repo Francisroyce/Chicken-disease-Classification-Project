@@ -1,7 +1,7 @@
 import sys, os
 sys.path.append(os.path.join(os.getcwd(), "src"))
+
 import traceback
-import os
 from pathlib import Path
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
@@ -12,7 +12,6 @@ from threading import Thread
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
-
 
 # Set locale environment variables
 os.putenv('LANG', 'en_US.UTF-8')
@@ -32,7 +31,6 @@ class PredictionPipeline:
         img_array = image.img_to_array(img)
         img_array = np.expand_dims(img_array, axis=0)
         img_array = img_array / 255.0  # Normalize
-
         preds = self.model.predict(img_array)
         result = np.argmax(preds)
         return result
@@ -42,14 +40,25 @@ class ClientsApp:
     def __init__(self):
         self.filename = Path("InputImage.jpg")
         self.model_path = os.path.join("artifacts", "training", "model.keras")
-        self.classifier = PredictionPipeline(self.model_path)
+        self.classifier = None  # Lazy initialization
+
+    def get_classifier(self):
+        if self.classifier is None:
+            try:
+                logging.info(f"Loading model from: {self.model_path}")
+                self.classifier = PredictionPipeline(self.model_path)
+                logging.info("Model loaded successfully.")
+            except Exception as e:
+                logging.error(f"Error loading model: {e}")
+                raise
+        return self.classifier
 
 c1App = ClientsApp()
 
 # --------- DVC-Based Training ---------
 def run_training():
-    subprocess.run(["dvc", "repro"])  # Run DVC pipeline
-    subprocess.run(["dvc", "push"])   # Optional: Push new model to remote
+    subprocess.run(["dvc", "repro"])
+    subprocess.run(["dvc", "push"])
 
 # --------- Routes ---------
 @app.route("/", methods=['GET'])
@@ -73,8 +82,9 @@ def predictionRoute():
         decodeImage(data['image'], c1App.filename)
         logging.debug("Image decoded successfully.")
 
-        logging.debug("Running prediction...")
-        result = c1App.classifier.predict(str(c1App.filename))
+        logging.debug("Loading model and running prediction...")
+        classifier = c1App.get_classifier()
+        result = classifier.predict(str(c1App.filename))
         logging.debug(f"Prediction result: {result}")
 
         prediction = "Healthy" if result == 1 else "Coccidiosis"
@@ -94,4 +104,3 @@ def predictionRoute():
 if __name__ == "__main__":
     print(f"Starting {app.config['APP_NAME']} server on port 8080...")
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
-
