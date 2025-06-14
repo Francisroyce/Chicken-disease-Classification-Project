@@ -6,7 +6,7 @@ from pathlib import Path
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from cnnclassifier.utils.common import decodeImage
-from cnnclassifier import logging  # your custom logger
+from cnnclassifier import logging
 import subprocess
 from threading import Thread
 import numpy as np
@@ -102,5 +102,6 @@ def predictionRoute():
 
 # --------- Start Server ---------
 if __name__ == "__main__":
-    print(f"Starting {app.config['APP_NAME']} server on port 8080...")
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+    port = int(os.environ.get("PORT", 8080))
+    print(f"Starting {app.config['APP_NAME']} server on port {port}...")
+    app.run(host='0.0.0.0', port=port)

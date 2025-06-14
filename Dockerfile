@@ -15,17 +15,15 @@ RUN apt-get update && apt-get install -y \
 
 # Copy dependency files and install
 COPY requirements.txt .
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt && \
+    rm -rf ~/.cache/pip
 
-# Copy all project files
+# Copy all project files (ensure model is included)
 COPY . .
-
-# Explicitly copy model file (ensure it's not excluded by .dockerignore or .gitignore)
-COPY artifacts/training/model.keras artifacts/training/model.keras
 
 # Expose the port Render uses
 EXPOSE 10000
 
-# Default start command
+# Start using gunicorn
 CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:10000"]
