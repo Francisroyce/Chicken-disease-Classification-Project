@@ -21,6 +21,9 @@ RUN pip install -r requirements.txt
 # Copy all project files
 COPY . .
 
+# Explicitly copy model file (ensure it's not excluded by .dockerignore or .gitignore)
+COPY artifacts/training/model.keras artifacts/training/model.keras
+
 # Expose the port Render uses
 EXPOSE 10000
 
