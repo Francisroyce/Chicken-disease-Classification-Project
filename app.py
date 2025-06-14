@@ -9,11 +9,16 @@ from flask_cors import CORS
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
+
+# --- ✅ FIX: Ensure 'cnnclassifier' module is in the path ---
+# Adjust this path if 'cnnclassifier' is located elsewhere
+src_path = os.path.join(os.getcwd(), "src")
+if src_path not in sys.path:
+    sys.path.append(src_path)
+
+# Now safe to import from cnnclassifier
 from cnnclassifier.utils.common import decodeImage
 from cnnclassifier import logging
-
-# Add source directory to path
-sys.path.append(os.path.join(os.getcwd(), "src"))
 
 # Set locale environment variables for compatibility
 os.environ['LANG'] = 'en_US.UTF-8'

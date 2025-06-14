@@ -11,16 +11,18 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install dependencies
+# Copy and install Python dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy all files and set PYTHONPATH
+# Copy app files into container
 COPY . .
-ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-# Expose default port
+# ✅ Set PYTHONPATH to include src folder
+ENV PYTHONPATH="${PYTHONPATH}:/app/src"
+
+# Expose Flask port
 EXPOSE 10000
 
-# Start the app using a dynamic port (Render compatible)
+# Start Flask app with Gunicorn
 CMD exec gunicorn app:app --bind 0.0.0.0:${PORT:-10000}
