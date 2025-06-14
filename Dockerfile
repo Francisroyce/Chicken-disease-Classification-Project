@@ -22,8 +22,8 @@ RUN pip install --upgrade pip && \
 # Copy all project files (ensure model is included)
 COPY . .
 
-# Expose the port Render uses
+# Expose the port (Render usually uses 10000, but we bind dynamically below)
 EXPOSE 10000
 
-# Start using gunicorn
-CMD ["gunicorn", "app:app", "--bind", "0.0.0.0:10000"]
+# Use dynamic port from env variable
+CMD exec gunicorn app:app --bind 0.0.0.0:${PORT:-8080}
