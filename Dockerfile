@@ -1,5 +1,3 @@
-# Dockerfile (at project root)
-
 FROM python:3.10-slim
 
 WORKDIR /app
@@ -13,17 +11,16 @@ RUN apt-get update && apt-get install -y \
     libxrender-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy dependency files and install
+# Copy and install dependencies
 COPY requirements.txt .
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    rm -rf ~/.cache/pip
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Copy all project files (ensure model is included)
+# Copy all files and set PYTHONPATH
 COPY . .
+ENV PYTHONPATH="${PYTHONPATH}:/app"
 
-# Expose the port (Render usually uses 10000, but we bind dynamically below)
+# Expose default port
 EXPOSE 10000
 
-# Use dynamic port from env variable
-CMD exec gunicorn app:app --bind 0.0.0.0:${PORT:-8080}
+# Start the app using a dynamic port (Render compatible)
+CMD exec gunicorn app:app --bind 0.0.0.0:${PORT:-10000}
