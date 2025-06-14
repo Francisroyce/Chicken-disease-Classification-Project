@@ -40,8 +40,7 @@ class PredictionPipeline:
         img_array = np.expand_dims(img_array, axis=0)
         img_array /= 255.0
         preds = self.model.predict(img_array)
-        result = int(np.argmax(preds))
-        return result
+        return preds  # return raw prediction array for confidence handling
 
 # --------- Client App Wrapper ---------
 class ClientsApp:
@@ -91,13 +90,22 @@ def predictionRoute():
 
         logging.debug("Running prediction...")
         classifier = c1App.get_classifier()
-        result = classifier.predict(str(c1App.filename))
+        preds = classifier.predict(str(c1App.filename))
 
-        prediction = "Healthy" if result == 1 else "Coccidiosis"
+        logging.info(f"[DEBUG] Raw prediction output: {preds}")
+
+        confidence = float(np.max(preds))
+        index = int(np.argmax(preds))
+
+        if confidence < 0.6:
+            prediction = "Unknown"
+        else:
+            prediction = "Healthy" if index == 1 else "Coccidiosis"
+
         return jsonify({
             "success": True,
             "app": app.config['APP_NAME'],
-            "result": [{"image": prediction}]
+            "result": [{"image": prediction, "confidence": round(confidence, 3)}]
         })
 
     except Exception as e:
