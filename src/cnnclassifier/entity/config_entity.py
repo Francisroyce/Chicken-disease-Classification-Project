@@ -47,6 +47,7 @@ class TrainingConfig:
     params_is_augmentation: bool
     params_image_size: List[int]
     params_learning_rate: float
+   
 
 #entity for evaluation
 @dataclass(frozen=True)
