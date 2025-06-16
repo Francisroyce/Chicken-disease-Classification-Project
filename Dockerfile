@@ -2,13 +2,14 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# Install system dependencies for TensorFlow
+# Install system dependencies for TensorFlow and Git
 RUN apt-get update && apt-get install -y \
     build-essential \
     libglib2.0-0 \
     libsm6 \
     libxext6 \
     libxrender-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy and install Python dependencies
