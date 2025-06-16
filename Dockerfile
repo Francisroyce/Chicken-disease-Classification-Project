@@ -12,15 +12,14 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy and install Python dependencies
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
-
-# Copy app files into container
+# ✅ Copy the entire project first (so setup.py is available)
 COPY . .
 
 # ✅ Set PYTHONPATH to include src folder
 ENV PYTHONPATH="${PYTHONPATH}:/app/src"
+
+# ✅ Now install Python dependencies including editable installs (-e .)
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
 # Expose Flask port
 EXPOSE 10000
