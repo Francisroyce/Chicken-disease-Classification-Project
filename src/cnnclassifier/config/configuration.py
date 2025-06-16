@@ -81,7 +81,6 @@ class ConfigurationManager:
         training_data = os.path.join("artifacts/data_ingestion", "Chicken-fecal-images")
 
         create_directories([Path(training['root_dir'])])
-
         training_config = TrainingConfig(
             root_dir=Path(training['root_dir']),
             trained_model_path=Path(training['trained_model_path']),

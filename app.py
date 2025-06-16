@@ -58,14 +58,14 @@ class ClientsApp:
 
 c1App = ClientsApp()
 
-# --------- Asynchronous DVC Training ---------
+# --------- Run training by calling your main.py pipeline ---------
 def run_training():
     try:
-        subprocess.run(["dvc", "repro"], check=True)
-        subprocess.run(["dvc", "push"], check=True)
-        logging.info("DVC training and push completed.")
+        # Run main.py using current Python interpreter
+        subprocess.run([sys.executable, "main.py"], check=True)
+        logging.info("Training pipeline completed successfully.")
     except subprocess.CalledProcessError as e:
-        logging.error(f"DVC error: {e}")
+        logging.error(f"Training pipeline error: {e}")
 
 # --------- Routes ---------
 @app.route("/", methods=["GET"])
@@ -75,7 +75,7 @@ def home():
 @app.route("/train", methods=["GET", "POST"])
 def trainRoute():
     Thread(target=run_training).start()
-    logging.info("Training triggered asynchronously.")
+    logging.info("Training started asynchronously via main.py.")
     return f"Training started for {app.config['APP_NAME']}."
 
 @app.route("/predict", methods=["POST"])
